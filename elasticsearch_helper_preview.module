@@ -65,7 +65,7 @@ function elasticsearch_helper_preview_form_elasticsearch_content_index_form_alte
   // Define available placeholders.
   // @see \Drupal\elasticsearch_helper_preview\PreviewHandler::preparePreviewPath()
   $t_args = [
-    '@placeholders' => implode(', ', ['_index', '_id']),
+    '@placeholders' => implode(', ', ['_index', '_id', '_type']),
     '@example' => '{_index}',
   ];
 
