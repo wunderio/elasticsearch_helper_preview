@@ -1,0 +1,12 @@
+{
+    "name": "drupal/elasticsearch_helper_preview",
+    "description": "Provides tools to preview content using Elasticsearch.",
+    "type": "drupal-module",
+    "license": "GPL-2.0+",
+    "authors": [
+        {
+            "name": "Raimonds Kalnins",
+            "email": "raimonds.kalnins@wunder.io"
+        }
+    ]
+}
