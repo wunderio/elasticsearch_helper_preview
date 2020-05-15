@@ -25,7 +25,8 @@ Add `preview` property to the Elasticsearch index plugin definition which suppor
 ]
 ```
 
-Placeholders in `path` field will be replaced with fields from the entity. Additionally, the following placeholders can be used:
+Placeholders in preview `path` field will be replaced with the values in `_source` field of the Elasticsearch document.
+Additionally, the following placeholders can be used:
 
 - `{_index}` - name of the temporary index where preview is stored.
 - `{_id}` - ID of the Elasticsearch document where entity is indexed.
