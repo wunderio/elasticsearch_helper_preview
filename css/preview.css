@@ -1,0 +1,10 @@
+.ui-dialog.preview .ui-dialog-content {
+    text-align: center;
+}
+
+.ui-dialog.preview iframe {
+    display: block;
+    border: none;
+    margin-left: auto;
+    margin-right: auto;
+}

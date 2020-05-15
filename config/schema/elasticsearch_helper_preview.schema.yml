@@ -1,0 +1,10 @@
+elasticsearch_helper_preview.settings:
+  type: config_object
+  label: 'Elasticsearch helper preview config.'
+  mapping:
+    base_url:
+      type: uri
+      label: 'Frontend application base URL'
+    expire:
+      type: integer
+      label: 'Remove preview indices older than'

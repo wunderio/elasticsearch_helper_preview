@@ -1,0 +1,4 @@
+elasticsearch_helper_preview.settings:
+  title: 'Preview'
+  route_name: elasticsearch_helper_preview.settings
+  base_route: elasticsearch_helper.elasticsearch_helper_settings_form

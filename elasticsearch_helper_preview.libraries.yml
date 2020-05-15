@@ -1,0 +1,9 @@
+preview:
+  version: VERSION
+  js:
+    js/preview.js: {}
+  css:
+    theme:
+      css/preview.css: {}
+  dependencies:
+    - core/drupal.dialog.ajax

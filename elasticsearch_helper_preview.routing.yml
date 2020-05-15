@@ -1,0 +1,21 @@
+elasticsearch_helper_preview.settings:
+  path: '/admin/config/search/elasticsearch_helper/preview'
+  defaults:
+    _form: '\Drupal\elasticsearch_helper_preview\Form\ElasticsearchPreviewForm'
+    _title: 'Elasticsearch preview settings'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+elasticsearch_helper_preview.preview:
+  path: '/elasticsearch-preview/{preview}'
+  defaults:
+    _controller: '\Drupal\elasticsearch_helper_preview\Controller\PreviewController::preview'
+    _title: 'Preview content'
+  requirements:
+    _custom_access: '\Drupal\elasticsearch_helper_preview\Controller\PreviewController::access'
+  options:
+    parameters:
+      preview:
+        type: elasticsearch_preview

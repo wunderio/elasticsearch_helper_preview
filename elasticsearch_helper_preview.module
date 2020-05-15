@@ -1,0 +1,147 @@
+<?php
+
+use Drupal\Core\Entity\ContentEntityFormInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface;
+
+/**
+ * Adds "preview" configuration to Elasticsearch indices provided by
+ * "elasticsearch_helper_content" module.
+ *
+ * @param $info
+ */
+function elasticsearch_helper_preview_elasticsearch_helper_elasticsearch_index_info_alter(&$info) {
+  $module_handler = \Drupal::moduleHandler();
+
+  if ($module_handler->moduleExists('elasticsearch_helper_content')) {
+    try {
+      $entity_type_manager = \Drupal::entityTypeManager();
+      $content_index_storage = $entity_type_manager->getStorage('elasticsearch_content_index');
+
+      foreach ($info as &$plugin_definition) {
+        if (isset($plugin_definition['content_index_entity_id'])) {
+          /** @var \Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface $index_entity */
+          if ($index_entity = $content_index_storage->load($plugin_definition['content_index_entity_id'])) {
+            if ($preview_settings = $index_entity->getThirdPartySetting('elasticsearch_helper_preview', 'preview')) {
+              $plugin_definition['preview'] = $preview_settings;
+            }
+          }
+        }
+      }
+    }
+    catch (Exception $e) {
+      watchdog_exception('elasticsearch_helper_preview', $e);
+    }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Adds preview settings to Elasticsearch Content Index plugin's form.
+ */
+function elasticsearch_helper_preview_form_elasticsearch_content_index_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $form_object = $form_state->getFormObject();
+  /** @var \Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface $entity */
+  $entity = $form_object->getEntity();
+
+  // Get preview settings.
+  $preview_settings = $entity->getThirdPartySettings('elasticsearch_helper_preview');
+
+  $form['preview'] = [
+    '#type' => 'container',
+    '#tree' => TRUE,
+    '#weight' => 27,
+  ];
+
+  $form['preview']['preview'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Enable preview'),
+    '#description' => t('Check to enable content preview in the front-end application.'),
+    '#default_value' => !empty($preview_settings['preview']),
+  ];
+
+  // Define available placeholders.
+  // @see \Drupal\elasticsearch_helper_preview\PreviewHandler::preparePreviewPath()
+  $t_args = [
+    '@placeholders' => implode(', ', ['_index', '_id']),
+    '@example' => '{_index}',
+  ];
+
+  // @todo Improve UI to allow adding multiple preview contexts. Currently
+  // only "default" context is added.
+  $form['preview']['default']['path'] = [
+    '#type' => 'textfield',
+    '#title' => t('Preview path'),
+    '#description' => t('Path in the front-end application where preview is rendered. Field names and the following values can be used as placeholders: @placeholders. Example: @example.', $t_args),
+    '#default_value' => isset($preview_settings['preview']['default']['path']) ? $preview_settings['preview']['default']['path'] : NULL,
+    '#states' => [
+      'visible' => [
+        ':input[name="preview[preview]"]' => ['checked' => TRUE],
+      ],
+    ],
+  ];
+
+  // Add entity builder.
+  $form['#entity_builders'][] = 'elasticsearch_helper_preview_form_elasticsearch_content_index_form_builder';
+}
+
+/**
+ * Elasticsearch content index plugin form builder.
+ *
+ * Adds preview settings into Elasticsearch Content Index plugin's third
+ * party settings.
+ *
+ * @param $entity_type
+ * @param \Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface $entity
+ * @param $form
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ */
+function elasticsearch_helper_preview_form_elasticsearch_content_index_form_builder($entity_type, ElasticsearchContentIndexInterface $entity, &$form, FormStateInterface $form_state) {
+  $preview_settings = $form_state->getValue('preview');
+
+  // Remove preview bool value if preview is enabled.
+  if (!empty($preview_settings['preview'])) {
+    unset($preview_settings['preview']);
+
+    $entity->setThirdPartySetting('elasticsearch_helper_preview', 'preview', $preview_settings);
+  }
+  // Remove settings altogether if preview is disabled.
+  else {
+    $entity->unsetThirdPartySetting('elasticsearch_helper_preview', 'preview');
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function elasticsearch_helper_preview_form_node_form_alter(&$form, FormStateInterface $form_state) {
+  $form_object = $form_state->getFormObject();
+
+  if (!($form_object instanceof ContentEntityFormInterface)) {
+    return;
+  }
+
+  $entity = $form_object->getEntity();
+  $op = $form_object->getOperation();
+
+  if ($entity instanceof ContentEntityInterface && in_array($op, ['edit', 'add', 'default'], TRUE)) {
+    /** @var \Drupal\elasticsearch_helper_preview\PreviewHandler $preview_handler */
+    $preview_handler = \Drupal::service('elasticsearch_helper_preview.preview_handler');
+
+    // Alter the preview button.
+    $preview_handler->alterForm($form, $form_state);
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function elasticsearch_helper_preview_cron() {
+  /** @var \Drupal\elasticsearch_helper_preview\PreviewHandler $preview_handler */
+  $preview_handler = \Drupal::service('elasticsearch_helper_preview.preview_handler');
+
+  // Remove expired preview indices.
+  $preview_handler->garbageCollection();
+}

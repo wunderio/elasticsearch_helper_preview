@@ -1,0 +1,14 @@
+services:
+  logger.channel.elasticsearch_helper_preview:
+    parent: logger.channel_base
+    arguments: ['elasticsearch_helper_preview']
+
+  elasticsearch_helper_preview.paramconverter.content_preview:
+    class: Drupal\elasticsearch_helper_preview\ParamConverter\ContentPreviewConverter
+    arguments: ['@tempstore.private']
+    tags:
+      - { name: paramconverter }
+    lazy: true
+  elasticsearch_helper_preview.preview_handler:
+    class: Drupal\elasticsearch_helper_preview\PreviewHandler
+    arguments: ['@tempstore.private', '@plugin.manager.elasticsearch_index.processor', '@config.factory', '@uuid', '@elasticsearch_helper.elasticsearch_client', '@logger.channel.elasticsearch_helper_preview']

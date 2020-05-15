@@ -1,0 +1,5 @@
+elasticsearch_helper_preview.settings:
+  title: 'Preview'
+  description: 'Configure Elasticsearch preview'
+  route_name: elasticsearch_helper_preview.settings
+  parent: elasticsearch_helper.elasticsearch_helper_settings_form
