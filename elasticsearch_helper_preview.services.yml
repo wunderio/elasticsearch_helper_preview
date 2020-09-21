@@ -12,3 +12,10 @@ services:
   elasticsearch_helper_preview.preview_handler:
     class: Drupal\elasticsearch_helper_preview\PreviewHandler
     arguments: ['@tempstore.private', '@plugin.manager.elasticsearch_index.processor', '@config.factory', '@uuid', '@elasticsearch_helper.elasticsearch_client', '@logger.channel.elasticsearch_helper_preview']
+
+  elasticsearch_helper_preview.preview_event_subscriber:
+    class: Drupal\elasticsearch_helper_preview\EventSubscriber\PreviewEventSubscriber
+    arguments: ['@elasticsearch_helper_preview.preview_handler']
+    tags:
+      # Use higher priority than Drupal\elasticsearch_helper_content\EventSubscriber\UnpublishedContentEventSubscriber
+      - { name: event_subscriber, priority: 50 }

@@ -294,6 +294,9 @@ class PreviewHandler {
       // Elasticsearch and will not interfere with existing entities.
       $entity->set($id_key, -1);
     }
+
+    // Indicate that the entity is in preview.
+    $entity->in_preview = TRUE;
   }
 
   /**
