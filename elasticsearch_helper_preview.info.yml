@@ -1,7 +1,7 @@
 name: Elasticsearch Helper Preview
 type: module
 description: Provide tools to preview content using Elasticsearch.
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^8 || ^9 || 10
 core: 8.x
 package: ElasticSearch Helper
 configure: elasticsearch_helper_preview.settings
