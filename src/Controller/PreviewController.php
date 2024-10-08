@@ -3,6 +3,7 @@
 namespace Drupal\elasticsearch_helper_preview\Controller;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
@@ -63,8 +64,12 @@ class PreviewController extends ControllerBase {
     $base_url = $this->previewHandler->getBaseUrl();
     // Metadata needs to be collected before redirecting an Ajax response.
     $preview_path = $preview->getPreviewPath()->toString(TRUE)->getGeneratedUrl();
+    // Prepare the response.
+    $response = new TrustedRedirectResponse($base_url . $preview_path);
+    // Do not cache the redirect response.
+    $response->addCacheableDependency((new CacheableMetadata())->setCacheMaxAge(0));
 
-    return new TrustedRedirectResponse($base_url . $preview_path);
+    return $response;
   }
 
 }
