@@ -11,7 +11,7 @@
         }
     ],
     "require": {
-        "drupal/elasticsearch_helper": "^7"
+        "drupal/elasticsearch_helper": "^8"
     },
     "minimum-stability": "dev"
 }

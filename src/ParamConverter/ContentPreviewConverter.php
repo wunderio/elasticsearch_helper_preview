@@ -2,9 +2,9 @@
 
 namespace Drupal\elasticsearch_helper_preview\ParamConverter;
 
+use Drupal\Core\ParamConverter\ParamConverterInterface;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Symfony\Component\Routing\Route;
-use Drupal\Core\ParamConverter\ParamConverterInterface;
 
 /**
  * Converts stored form state into an entity.
@@ -12,6 +12,8 @@ use Drupal\Core\ParamConverter\ParamConverterInterface;
 class ContentPreviewConverter implements ParamConverterInterface {
 
   /**
+   * The private storage factory instance.
+   *
    * @var \Drupal\Core\TempStore\PrivateTempStoreFactory
    */
   protected $tempStoreFactory;
@@ -20,6 +22,7 @@ class ContentPreviewConverter implements ParamConverterInterface {
    * ContentPreviewConverter constructor.
    *
    * @param \Drupal\Core\TempStore\PrivateTempStoreFactory $temp_store_factory
+   *   The private storage factory instance.
    */
   public function __construct(PrivateTempStoreFactory $temp_store_factory) {
     $this->tempStoreFactory = $temp_store_factory;
@@ -31,7 +34,7 @@ class ContentPreviewConverter implements ParamConverterInterface {
   public function convert($value, $definition, $name, array $defaults) {
     $store = $this->tempStoreFactory->get('elasticsearch_preview');
 
-    return $preview = $store->get($value);
+    return $store->get($value);
   }
 
   /**

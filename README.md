@@ -29,13 +29,7 @@ Elasticsearch Helper Preview can be installed via the
 2. Install [Elasticsearch Helper][elasticsearch_helper] module, configure it and create indices using `ElasticsearchIndex` type plugins in a custom module.
    - See Example section for further details.
 3. Install [Elasticsearch Helper Preview][elasticsearch_helper_preview] module
-4. Create indices using `drush` commands as follows:
-    ```
-    drush elasticsearch-helper-setup
-    drush elasticsearch-helper-reindex
-    drush queue-run elasticsearch_helper_indexing
-    ```
-5. Go to the `/admin/config/search/elasticsearch_helper/preview` and configure Elasticsearch Helper Preview related settings.
+4. Go to the `/admin/config/search/elasticsearch_helper/preview` and configure Elasticsearch Helper Preview related settings.
 
 ### Usage in Drupal
 
@@ -47,7 +41,7 @@ Add `preview` property to the Elasticsearch index plugin definition which suppor
 ```
 "preview" => [
   "default" => [
-    "path" => "/preview/{_index}/{_id}/{_type}",
+    "path" => "/preview/{_index}/{_id}",
   ],
 ]
 ```
@@ -57,7 +51,6 @@ Additionally, the following placeholders can be used:
 
 - `{_index}` - name of the temporary index where preview is stored.
 - `{_id}` - ID of the Elasticsearch document where entity is indexed.
-- `{_type}` - type of the Elasticsearch document.
 
 Order of placeholders is arbitrary.
 

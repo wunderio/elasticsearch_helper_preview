@@ -16,11 +16,11 @@ use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Drupal\Core\Url;
 use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexManager;
 use Drupal\elasticsearch_helper_preview\Ajax\DialogPreviewCommand;
-use Elasticsearch\Client;
+use Elastic\Elasticsearch\Client;
 use Psr\Log\LoggerInterface;
 
 /**
- * Class PreviewHandler
+ * Preview handler class.
  */
 class PreviewHandler {
 
@@ -33,36 +33,50 @@ class PreviewHandler {
   const INDEX_PREFIX = 'content-preview-';
 
   /**
+   * The private storage factory instance.
+   *
    * @var \Drupal\Core\TempStore\PrivateTempStoreFactory
    */
   protected $tempStoreFactory;
 
   /**
+   * The Elasticsearch index manager instance.
+   *
    * @var \Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexManager
    */
   protected $elasticsearchIndexManager;
 
   /**
+   * The configuration factory instance.
+   *
    * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
   protected $configFactory;
 
   /**
+   * The UUID generator instance.
+   *
    * @var \Drupal\Component\Uuid\UuidInterface
    */
   protected $uuidGenerator;
 
   /**
-   * @var \Elasticsearch\Client
+   * The Elasticsearch client instance.
+   *
+   * @var \Elastic\Elasticsearch\Client
    */
   protected $elasticsearchClient;
 
   /**
+   * The logger instance.
+   *
    * @var \Psr\Log\LoggerInterface
    */
   protected $logger;
 
   /**
+   * The preview element ID.
+   *
    * @var string
    */
   public $previewElementId = 'preview';
@@ -71,11 +85,17 @@ class PreviewHandler {
    * PreviewHandler constructor.
    *
    * @param \Drupal\Core\TempStore\PrivateTempStoreFactory $temp_store_factory
+   *   The private storage factory instance.
    * @param \Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexManager $elasticsearch_index_manager
+   *   The Elasticsearch index manager instance.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The configuration factory instance.
    * @param \Drupal\Component\Uuid\UuidInterface $uuid_generator
-   * @param \Elasticsearch\Client $client
+   *   The UUID generator instance.
+   * @param \Elastic\Elasticsearch\Client $client
+   *   The Elasticsearch client instance.
    * @param \Psr\Log\LoggerInterface $logger
+   *   The logger instance.
    */
   public function __construct(PrivateTempStoreFactory $temp_store_factory, ElasticsearchIndexManager $elasticsearch_index_manager, ConfigFactoryInterface $config_factory, UuidInterface $uuid_generator, Client $client, LoggerInterface $logger) {
     $this->tempStoreFactory = $temp_store_factory;
@@ -90,6 +110,7 @@ class PreviewHandler {
    * Returns front-end application base URL.
    *
    * @return array|mixed|null
+   *   The base URL.
    */
   public function getBaseUrl() {
     return $this->configFactory->get('elasticsearch_helper_preview.settings')->get('base_url');
@@ -99,6 +120,7 @@ class PreviewHandler {
    * Returns preview index expiration delay in seconds.
    *
    * @return int
+   *   The expiration delay in seconds.
    */
   public function getExpiration() {
     return $this->configFactory->get('elasticsearch_helper_preview.settings')->get('expire');
@@ -107,8 +129,10 @@ class PreviewHandler {
   /**
    * Alters the preview button on entity form.
    *
-   * @param $form
+   * @param array $form
+   *   The form render array.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state instance.
    */
   public function alterForm(&$form, FormStateInterface $form_state) {
     if (!empty($form['actions']['preview']['#access'])) {
@@ -116,7 +140,10 @@ class PreviewHandler {
       if ($entity = $this->getEntityFromFormState($form, $form_state)) {
         // Check if there are index plugins that support previewing.
         if ($this->getCandidatePreviewDefinitions($entity)) {
-          $form['actions']['preview']['#ajax']['callback'] = [$this, 'previewSubmit'];
+          $form['actions']['preview']['#ajax']['callback'] = [
+            $this,
+            'previewSubmit',
+          ];
           // Default preview button works in "default" preview context.
           $form['actions']['preview']['#preview_context'] = PreviewDefinition::CONTEXT_DEFAULT;
         }
@@ -128,9 +155,12 @@ class PreviewHandler {
    * Submit handler for preview button.
    *
    * @param array $form
+   *   The form render array.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state instance.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   *   The Ajax response instance.
    */
   public function previewSubmit(array &$form, FormStateInterface $form_state) {
     // Get preview context.
@@ -185,10 +215,14 @@ class PreviewHandler {
    * Saves preview instance.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity being previewed.
    * @param \Drupal\elasticsearch_helper_preview\Preview $preview
+   *   The preview instance.
    * @param \Drupal\elasticsearch_helper_preview\PreviewDefinition $preview_definition
+   *   The preview definition.
    *
    * @return string
+   *   The key of the private storage containing the preview instance.
    *
    * @throws \Drupal\Core\TempStore\TempStoreException
    */
@@ -205,9 +239,12 @@ class PreviewHandler {
    * Returns entity from the form state.
    *
    * @param array $form
+   *   The form render array.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state instance.
    *
    * @return \Drupal\Core\Entity\EntityInterface|null
+   *   Returns the entity from the form state.
    */
   protected function getEntityFromFormState(array $form, FormStateInterface $form_state) {
     /** @var \Drupal\Core\Entity\ContentEntityFormInterface $form_object */
@@ -223,9 +260,12 @@ class PreviewHandler {
    * Returns a key for private storage of a preview instance.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity being previewed.
    * @param \Drupal\elasticsearch_helper_preview\PreviewDefinition $preview_definition
+   *   The preview definition.
    *
    * @return string|null
+   *   Returns the private storage key.
    */
   protected function getStorageKey(EntityInterface $entity, PreviewDefinition $preview_definition) {
     return $entity->uuid();
@@ -235,10 +275,14 @@ class PreviewHandler {
    * Returns preview instance.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity being previewed.
    * @param \Drupal\elasticsearch_helper_preview\PreviewDefinition $preview_definition
+   *   The preview definition.
    * @param string $context
+   *   The preview context key.
    *
    * @return \Drupal\elasticsearch_helper_preview\Preview
+   *   The preview instance.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    * @throws \RuntimeException
@@ -284,6 +328,7 @@ class PreviewHandler {
    * Prepare entity for indexing.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity being previewed.
    */
   protected function prepareEntity(EntityInterface $entity) {
     // If node is new, assign an arbitrary ID.
@@ -302,18 +347,19 @@ class PreviewHandler {
   /**
    * Replaces placeholders in preview path with document data.
    *
-   * @param $path
+   * @param string $path
+   *   The preview path.
    * @param array $document
-   *   Elasticsearch document.
+   *   The Elasticsearch document.
    *
    * @return string
+   *   The preview path.
    */
   public function preparePreviewPath($path, array $document) {
     // Allow document values and index to be used in preview path placeholder.
     $placeholders = $document['_source'];
     $placeholders['_index'] = $document['_index'];
     $placeholders['_id'] = $document['_id'];
-    $placeholders['_type'] = isset($document['_type']) ? $document['_type'] : NULL;
 
     // Replace placeholders with data.
     $preview_path = '/' . $this->replacePlaceholders($path, $placeholders);
@@ -325,9 +371,11 @@ class PreviewHandler {
   /**
    * Returns Url object with given path.
    *
-   * @param $path
+   * @param string $path
+   *   The preview path.
    *
    * @return \Drupal\Core\Url
+   *   The preview Url instance.
    */
   public function getPreviewPathUrl($path) {
     return Url::fromUserInput($path);
@@ -336,9 +384,11 @@ class PreviewHandler {
   /**
    * Returns preview definition of given Elasticsearch index plugin.
    *
-   * @param $plugin_id
+   * @param string $plugin_id
+   *   The Elasticsearch index plugin ID.
    *
    * @return \Drupal\elasticsearch_helper_preview\PreviewDefinition|null
+   *   The preview definition.
    */
   public function getPreviewDefinition($plugin_id) {
     $result = NULL;
@@ -361,9 +411,12 @@ class PreviewHandler {
    * Returns a list of preview definition instances keyed by index plugin ID.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
-   * @param $context
+   *   The entity being previewed.
+   * @param string $context
+   *   The preview context key.
    *
    * @return \Drupal\elasticsearch_helper_preview\PreviewDefinition[]
+   *   The preview definition.
    */
   public function getCandidatePreviewDefinitions(EntityInterface $entity, $context = PreviewDefinition::CONTEXT_DEFAULT) {
     $result = [];
@@ -405,11 +458,15 @@ class PreviewHandler {
   /**
    * Returns Elasticsearch index plugin instance with modified index name.
    *
-   * @param $plugin_id
-   * @param $preview_index_name
+   * @param string $plugin_id
+   *   The Elasticsearch index plugin ID.
+   * @param string $preview_index_name
+   *   The preview index name.
    * @param array $configuration
+   *   The Elasticsearch index plugin configuration.
    *
    * @return \Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexInterface
+   *   The Elasticsearch index plugin instance.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
@@ -439,6 +496,7 @@ class PreviewHandler {
    * Generates preview hash.
    *
    * @return string
+   *   The preview hash.
    */
   public function generatePreviewHash() {
     return $this->uuidGenerator->generate();
@@ -448,6 +506,7 @@ class PreviewHandler {
    * Returns preview index prefix.
    *
    * @return string
+   *   The preview index prefix.
    */
   public function getPreviewIndexPrefix() {
     return Settings::get('elasticsearch_helper_preview_index_prefix', self::INDEX_PREFIX);
@@ -456,9 +515,11 @@ class PreviewHandler {
   /**
    * Returns preview index name.
    *
-   * @param $hash
+   * @param string $hash
+   *   The preview hash.
    *
    * @return string
+   *   The preview index name.
    */
   public function getPreviewIndexName($hash) {
     // Get index prefix.
@@ -473,10 +534,13 @@ class PreviewHandler {
    * This is a copy of \Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexBase::replacePlaceholders()
    * which (unfortunately) is a private method.
    *
-   * @param $haystack
-   * @param $data
+   * @param string $haystack
+   *   The placeholder token.
+   * @param array $data
+   *   The index-able data.
    *
    * @return string
+   *   The string with replaced placeholders.
    */
   public function replacePlaceholders($haystack, $data) {
     // Replace any placeholders with the right value.
@@ -493,8 +557,9 @@ class PreviewHandler {
   }
 
   /**
-   * Cleans up expired preview indices. This method is called automatically on
-   * cron run.
+   * Cleans up expired preview indices.
+   *
+   * This method is called automatically on cron run.
    */
   public function garbageCollection() {
     // Get expired indices.
@@ -518,6 +583,7 @@ class PreviewHandler {
    * Returns a list of expired indices.
    *
    * @return array
+   *   The list of expired indices.
    */
   protected function getExpiredPreviewIndices() {
     $expired_indices = [];
@@ -542,6 +608,7 @@ class PreviewHandler {
    * Returns an array of all preview indices.
    *
    * @return array
+   *   The list of preview indices.
    */
   protected function getPreviewIndices() {
     // Get preview indices sorted by date.
@@ -549,9 +616,10 @@ class PreviewHandler {
       'index' => $this->getPreviewIndexPrefix() . '*',
       'h' => 'i,creation.date.string',
       's' => 'creation.date.string',
+      'format' => 'json',
     ];
 
-    return $this->elasticsearchClient->cat()->indices($params);
+    return $this->elasticsearchClient->cat()->indices($params)->asArray();
   }
 
 }

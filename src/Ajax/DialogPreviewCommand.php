@@ -10,11 +10,15 @@ use Drupal\Core\Ajax\CommandInterface;
 class DialogPreviewCommand implements CommandInterface {
 
   /**
+   * The CSS selector.
+   *
    * @var string
    */
   protected $selector;
 
   /**
+   * The settings array.
+   *
    * @var array|null
    */
   protected $settings;
@@ -22,8 +26,10 @@ class DialogPreviewCommand implements CommandInterface {
   /**
    * DialogPreviewCommand constructor.
    *
-   * @param $selector
-   * @param array|NULL $settings
+   * @param string $selector
+   *   The CSS selector.
+   * @param array|null $settings
+   *   The settings array.
    */
   public function __construct($selector, array $settings = NULL) {
     $this->selector = $selector;

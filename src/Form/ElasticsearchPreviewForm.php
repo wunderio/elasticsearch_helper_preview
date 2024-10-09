@@ -2,6 +2,7 @@
 
 namespace Drupal\elasticsearch_helper_preview\Form;
 
+use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -57,6 +58,20 @@ class ElasticsearchPreviewForm extends ConfigFormBase {
     ];
 
     return parent::buildForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+
+    // Get base URL.
+    $base_url = $form_state->getValue('base_url');
+
+    if (!UrlHelper::isExternal($base_url)) {
+      $form_state->setErrorByName('base_url', $this->t('The front-end application URL must be external.'));
+    }
   }
 
   /**

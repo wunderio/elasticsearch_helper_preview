@@ -12,19 +12,22 @@ use Drupal\elasticsearch_helper_preview\PreviewHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class PreviewController
+ * Preview controller class.
  */
 class PreviewController extends ControllerBase {
 
   /**
+   * The preview handler instance.
+   *
    * @var \Drupal\elasticsearch_helper_preview\PreviewHandler
    */
   protected $previewHandler;
 
   /**
-   * PreviewController constructor.
+   * Preview controller class constructor.
    *
    * @param \Drupal\elasticsearch_helper_preview\PreviewHandler $preview_handler
+   *   The preview handler instance.
    */
   public function __construct(PreviewHandler $preview_handler) {
     $this->previewHandler = $preview_handler;
@@ -40,9 +43,13 @@ class PreviewController extends ControllerBase {
   }
 
   /**
+   * Returns preview action access result.
+   *
    * @param \Drupal\elasticsearch_helper_preview\Preview $preview
+   *   The preview instance.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
+   *   Returns the access result object.
    */
   public function access(Preview $preview) {
     if ($entity = $preview->getEntity()) {
@@ -55,9 +62,13 @@ class PreviewController extends ControllerBase {
   }
 
   /**
+   * Returns the redirection response to the preview URL.
+   *
    * @param \Drupal\elasticsearch_helper_preview\Preview $preview
+   *   The preview instance.
    *
    * @return \Symfony\Component\HttpFoundation\Response
+   *   The response object.
    */
   public function preview(Preview $preview) {
     // Get base app URL.

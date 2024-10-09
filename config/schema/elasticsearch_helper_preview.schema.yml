@@ -8,3 +8,14 @@ elasticsearch_helper_preview.settings:
     expire:
       type: integer
       label: 'Remove preview indices older than'
+
+# Schema for theme settings.
+elasticsearch_helper_content.index.third_party.elasticsearch_helper_preview:
+  type: mapping
+  label: 'Elasticsearch Helper Preview third party settings'
+  mapping:
+    preview:
+      type: mapping
+      label: 'Preview settings'
+      mapping:
+        default:

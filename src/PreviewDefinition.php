@@ -17,7 +17,6 @@ namespace Drupal\elasticsearch_helper_preview;
  * Preview context key can describe the meaning of the preview url,
  * e.g., "default" or "landing-page", depending on how the index is used in the
  * front-end application.
- *
  */
 class PreviewDefinition {
 
@@ -27,20 +26,26 @@ class PreviewDefinition {
   const CONTEXT_DEFAULT = 'default';
 
   /**
+   * The Elasticsearch index plugin ID.
+   *
    * @var string
    */
   protected $pluginId;
 
   /**
+   * The preview definition.
+   *
    * @var array
    */
   protected $definition = [];
 
   /**
-   * PreviewDefinition constructor.
+   * The preview definition class constructor.
    *
-   * @param $plugin_id
+   * @param string $plugin_id
+   *   The Elasticsearch index plugin ID.
    * @param array $definition
+   *   The preview definition.
    */
   public function __construct($plugin_id, array $definition) {
     $this->validate($definition);
@@ -53,6 +58,7 @@ class PreviewDefinition {
    * Validates provided preview definition.
    *
    * @param array $definition
+   *   The preview definition.
    *
    * @throws \InvalidArgumentException
    */
@@ -78,6 +84,7 @@ class PreviewDefinition {
    * Returns Elasticsearch index plugin ID.
    *
    * @return string
+   *   The Elasticsearch index plugin ID.
    */
   public function getPluginId() {
     return $this->pluginId;
@@ -87,6 +94,7 @@ class PreviewDefinition {
    * Returns preview definition array.
    *
    * @return array
+   *   The preview definition.
    */
   public function getDefinition() {
     return $this->definition;
@@ -96,6 +104,7 @@ class PreviewDefinition {
    * Returns available preview contexts.
    *
    * @return array
+   *   A list of context keys.
    */
   public function getContexts() {
     return array_keys($this->definition);
@@ -105,8 +114,10 @@ class PreviewDefinition {
    * Returns preview path for given context.
    *
    * @param string $context
+   *   The preview context key.
    *
    * @return mixed|null
+   *   The preview path URL.
    */
   public function getPath($context = self::CONTEXT_DEFAULT) {
     if (isset($this->definition[$context]['path'])) {

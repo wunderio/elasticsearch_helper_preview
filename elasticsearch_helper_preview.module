@@ -1,15 +1,16 @@
 <?php
 
 use Drupal\Core\Entity\ContentEntityFormInterface;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface;
 
 /**
  * Adds "preview" configuration to Elasticsearch indices provided by
  * "elasticsearch_helper_content" module.
  *
- * @param $info
+ * @param array $info
  */
 function elasticsearch_helper_preview_elasticsearch_helper_elasticsearch_index_info_alter(&$info) {
   $module_handler = \Drupal::moduleHandler();
@@ -31,7 +32,8 @@ function elasticsearch_helper_preview_elasticsearch_helper_elasticsearch_index_i
       }
     }
     catch (Exception $e) {
-      watchdog_exception('elasticsearch_helper_preview', $e);
+      $logger = \Drupal::logger('elasticsearch_helper_preview');
+      Error::logException($logger, $e);
     }
   }
 }
@@ -52,7 +54,7 @@ function elasticsearch_helper_preview_form_elasticsearch_content_index_form_alte
   $form['preview'] = [
     '#type' => 'container',
     '#tree' => TRUE,
-    '#weight' => 27,
+    '#weight' => 71,
   ];
 
   $form['preview']['preview'] = [
@@ -65,7 +67,7 @@ function elasticsearch_helper_preview_form_elasticsearch_content_index_form_alte
   // Define available placeholders.
   // @see \Drupal\elasticsearch_helper_preview\PreviewHandler::preparePreviewPath()
   $t_args = [
-    '@placeholders' => implode(', ', ['_index', '_id', '_type']),
+    '@placeholders' => implode(', ', ['_index', '_id']),
     '@example' => '{_index}',
   ];
 
@@ -74,8 +76,8 @@ function elasticsearch_helper_preview_form_elasticsearch_content_index_form_alte
   $form['preview']['default']['path'] = [
     '#type' => 'textfield',
     '#title' => t('Preview path'),
-    '#description' => t('Path in the front-end application where preview is rendered. Field names and the following values can be used as placeholders: @placeholders. Example: @example.', $t_args),
-    '#default_value' => isset($preview_settings['preview']['default']['path']) ? $preview_settings['preview']['default']['path'] : NULL,
+    '#description' => t('The path in the front-end application where the preview is rendered. Field names and the following values can be used as placeholders: @placeholders. Example: @example.', $t_args),
+    '#default_value' => $preview_settings['preview']['default']['path'] ?? NULL,
     '#states' => [
       'visible' => [
         ':input[name="preview[preview]"]' => ['checked' => TRUE],
